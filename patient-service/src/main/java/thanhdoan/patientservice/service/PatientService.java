@@ -9,6 +9,7 @@ import thanhdoan.patientservice.mapper.PatientMapper;
 import thanhdoan.patientservice.model.Patient;
 import thanhdoan.patientservice.repository.PatientRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,9 +39,18 @@ public class PatientService {
         return PatientMapper.toDTO(newPatient);
     }
 
-//    public PatientResponseDTO updatePatient(UUID patientId, PatientRequestDTO patientRequestDTO) {
-//        Patient existingPatient = patientRepository.findById(patientId).orElseThrow(() -> new PatientNotFoundException("Patient not found"));
-//
-//    }
+    public PatientResponseDTO updatePatient(UUID patientId, PatientRequestDTO patientRequestDTO) {
+        Patient existingPatient = patientRepository.findById(patientId).orElseThrow(() -> new PatientNotFoundException("Patient not found"));
+        if (patientRepository.existsByEmail(patientRequestDTO.getEmail())) {
+            throw new EmailAlreadyExistsException(patientRequestDTO.getEmail() + " has been already existed");
+        }
+        existingPatient.setName(patientRequestDTO.getName());
+        existingPatient.setAddress(patientRequestDTO.getAddress());
+        existingPatient.setEmail(patientRequestDTO.getEmail());
+        existingPatient.setDateOfBirth(LocalDate.parse(patientRequestDTO.getDateOfBirth()));
+
+        Patient updatedPatient = patientRepository.save(existingPatient);
+        return PatientMapper.toDTO(updatedPatient);
+    }
 
 }
