@@ -1,6 +1,7 @@
 package thanhdoan.patientservice.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import thanhdoan.patientservice.dto.PatientRequestDTO;
 import thanhdoan.patientservice.dto.PatientResponseDTO;
 import thanhdoan.patientservice.exception.EmailAlreadyExistsException;
@@ -41,7 +42,7 @@ public class PatientService {
 
     public PatientResponseDTO updatePatient(UUID patientId, PatientRequestDTO patientRequestDTO) {
         Patient existingPatient = patientRepository.findById(patientId).orElseThrow(() -> new PatientNotFoundException("Patient not found"));
-        if (patientRepository.existsByEmail(patientRequestDTO.getEmail())) {
+        if (patientRepository.existsByEmailAndIdNot(patientRequestDTO.getEmail(), patientId)) {
             throw new EmailAlreadyExistsException(patientRequestDTO.getEmail() + " has been already existed");
         }
         existingPatient.setName(patientRequestDTO.getName());
@@ -51,6 +52,10 @@ public class PatientService {
 
         Patient updatedPatient = patientRepository.save(existingPatient);
         return PatientMapper.toDTO(updatedPatient);
+    }
+
+    public void deletePatient(UUID patientId) {
+        patientRepository.deleteById(patientId);
     }
 
 }
